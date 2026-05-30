@@ -1,0 +1,96 @@
+{
+  "auth": {
+    "registerCompany": {
+      "name": "IGBC Test Company User",
+      "email": "company.tester@igbc.local",
+      "password": "Company123!"
+    },
+    "loginAdmin": {
+      "email": "admin.tester@igbc.local",
+      "password": "Admin123!"
+    },
+    "loginAssessor": {
+      "email": "assessor.tester@igbc.local",
+      "password": "Assessor123!"
+    },
+    "loginCompany": {
+      "email": "company.tester@igbc.local",
+      "password": "Company123!"
+    }
+  },
+  "project": {
+    "createProject": {
+      "projectName": "IGBC Integration Test Tower",
+      "companyName": "IGBC Demo Developers Pvt Ltd",
+      "projectType": "Commercial Office",
+      "location": "Bengaluru, Karnataka",
+      "description": "Integration test project for validating the complete IGBC certification workflow.",
+      "status": "Draft",
+      "assessmentStage": "Preliminary"
+    },
+    "updateProject": {
+      "status": "Submitted",
+      "assessmentStage": "Final"
+    }
+  },
+  "document": {
+    "uploadDocumentMultipartFields": {
+      "projectId": "{{projectId}}",
+      "category": "Energy",
+      "file": "Attach a local pdf, xlsx, xls, png, jpg, or jpeg file under the multipart field named file."
+    },
+    "sampleDocumentMetadata": {
+      "projectId": "665000000000000000000102",
+      "uploadedBy": "665000000000000000000003",
+      "fileName": "energy-performance-report.pdf",
+      "originalName": "Energy Performance Report.pdf",
+      "fileType": "application/pdf",
+      "fileSize": 524288,
+      "filePath": "uploads/documents/energy-performance-report.pdf",
+      "category": "Energy",
+      "status": "Uploaded",
+      "aiSummary": "",
+      "validationResult": null
+    }
+  },
+  "assessment": {
+    "createAssessment": {
+      "projectId": "{{projectId}}",
+      "assessorId": "665000000000000000000002",
+      "assessmentType": "Preliminary",
+      "status": "Pending",
+      "score": 72,
+      "maxScore": 100,
+      "rating": "Silver",
+      "creditsEarned": 36,
+      "assessorComments": "Initial submission is complete enough for preliminary review.",
+      "aiScore": 0,
+      "aiRecommendation": ""
+    },
+    "updateAssessment": {
+      "status": "InReview",
+      "score": 78,
+      "rating": "Gold",
+      "creditsEarned": 39,
+      "assessorComments": "Energy and water evidence improved after review."
+    },
+    "submitAssessment": {
+      "score": 82,
+      "maxScore": 100,
+      "rating": "Gold",
+      "creditsEarned": 41,
+      "assessorComments": "Assessment submitted with Gold rating recommendation.",
+      "aiScore": 80,
+      "aiRecommendation": "Proceed with final certification review."
+    }
+  },
+  "report": {
+    "generateReport": {
+      "reportType": "Preliminary",
+      "assessmentId": "{{assessmentId}}"
+    }
+  },
+  "certificate": {
+    "generateCertificate": {}
+  }
+}

@@ -1,0 +1,1475 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IGBC Backend API Testing Dashboard</title>
+  <style>
+    :root {
+      --bg: #f3f8f1;
+      --panel: #ffffff;
+      --panel-soft: #eef7ef;
+      --text: #17231a;
+      --muted: #5f7064;
+      --line: #d7e7d8;
+      --green: #14833b;
+      --green-dark: #0e642d;
+      --green-soft: #dcf3e1;
+      --blue: #2563eb;
+      --amber: #a15c00;
+      --red: #b42318;
+      --red-soft: #fff0ed;
+      --shadow: 0 18px 48px rgba(20, 83, 45, 0.12);
+      --radius: 8px;
+      --mono: Consolas, "SFMono-Regular", Menlo, Monaco, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, rgba(20, 131, 59, 0.1), transparent 340px), var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .shell {
+      width: min(1560px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 38px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 16px;
+    }
+
+    .hero-main, .side-card, .bar, .tabs, .content, .console, .quick, .summary {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-main { padding: 18px; }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(29px, 4vw, 44px);
+      line-height: 1.06;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 850px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .side-card {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    .status-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 28px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--panel-soft);
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .pill::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .pill.ok { background: var(--green-soft); color: var(--green-dark); }
+    .pill.warn { background: #fff6dc; color: var(--amber); }
+    .pill.err { background: var(--red-soft); color: var(--red); }
+    .pill.idle { background: #edf2f7; color: #536171; }
+
+    .token-preview, .saved-id {
+      min-height: 38px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .bar {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 12px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    input, select {
+      min-height: 40px;
+      padding: 9px 11px;
+    }
+
+    textarea {
+      min-height: 144px;
+      padding: 11px;
+      resize: vertical;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: rgba(20, 131, 59, 0.62);
+      box-shadow: 0 0 0 4px rgba(20, 131, 59, 0.12);
+    }
+
+    .btn {
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      background: var(--green);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+      box-shadow: 0 9px 18px rgba(20, 131, 59, 0.2);
+    }
+
+    .btn:hover { background: var(--green-dark); }
+    .btn:disabled { cursor: wait; opacity: 0.68; }
+
+    .btn.secondary {
+      border-color: var(--line);
+      background: #fff;
+      color: var(--green-dark);
+      box-shadow: none;
+    }
+
+    .btn.danger {
+      background: var(--red);
+      box-shadow: 0 9px 18px rgba(180, 35, 24, 0.14);
+    }
+
+    .quick {
+      margin-bottom: 16px;
+      padding: 14px;
+    }
+
+    .quick-head, .section-head, .console-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .quick-head h2, .section-head h2, .console-head h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(110px, 1fr));
+      gap: 8px;
+    }
+
+    .workflow-step {
+      display: grid;
+      gap: 6px;
+      min-height: 86px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfdfb;
+    }
+
+    .workflow-step b { font-size: 13px; }
+    .workflow-step span { color: var(--muted); font-size: 12px; }
+    .workflow-step.ok { border-color: #a7dfb3; background: #f0fbf2; }
+    .workflow-step.err { border-color: #ffd0ca; background: #fff7f5; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 245px minmax(0, 1fr) 460px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .tabs, .console { position: sticky; top: 14px; }
+    .tabs { padding: 9px; }
+
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      min-height: 41px;
+      margin: 2px 0;
+      padding: 9px 10px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 900;
+      text-align: left;
+    }
+
+    .tab-btn.active {
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 10px 22px rgba(20, 131, 59, 0.24);
+    }
+
+    .tab-btn span { font-size: 12px; }
+
+    .content { overflow: hidden; }
+    .tab-panel { display: none; padding: 16px; }
+    .tab-panel.active { display: block; }
+
+    .panel-note {
+      margin: -4px 0 14px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .grid { display: grid; gap: 12px; }
+
+    .endpoint, .info-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .endpoint-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 13px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff, #f8fcf8);
+    }
+
+    .endpoint h3, .info-card h3 {
+      margin: 0 0 7px;
+      font-size: 16px;
+      line-height: 1.25;
+    }
+
+    .route {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .method {
+      display: inline-flex;
+      align-items: center;
+      min-height: 23px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      color: #fff;
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .method.get { background: var(--blue); }
+    .method.post { background: var(--green); }
+    .method.put { background: var(--amber); }
+    .method.delete { background: var(--red); }
+
+    .endpoint-body, .info-body {
+      display: grid;
+      gap: 12px;
+      padding: 13px;
+    }
+
+    .fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+    .field label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .saved-grid, .env-grid, .summary-grid, .route-results {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .env-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .metric {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+    }
+
+    .metric b {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .metric span, .metric code {
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .console { overflow: hidden; }
+    .console-head {
+      margin: 0;
+      padding: 13px;
+      border-bottom: 1px solid var(--line);
+      background: #f8fcf8;
+    }
+
+    .console-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+      padding: 13px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .status-text.ok { color: var(--green-dark); }
+    .status-text.warn { color: var(--amber); }
+    .status-text.err { color: var(--red); }
+
+    .viewer-wrap {
+      display: grid;
+      gap: 11px;
+      padding: 13px;
+    }
+
+    .viewer-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    pre.viewer {
+      min-height: 210px;
+      max-height: 40vh;
+      margin: 0;
+      padding: 13px;
+      border-radius: var(--radius);
+      background: #102015;
+      color: #d8f8df;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.55;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    pre.viewer.small { min-height: 120px; }
+    pre.viewer.error { background: #2b1414; color: #ffd7d2; }
+
+    .json-key { color: #a7f3d0; }
+    .json-string { color: #fde68a; }
+    .json-number { color: #93c5fd; }
+    .json-boolean { color: #fca5a5; }
+    .json-null { color: #c4b5fd; }
+    .empty { color: #9fbaaa; }
+
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 20;
+      max-width: min(430px, calc(100vw - 32px));
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      background: #102015;
+      color: #ecfff0;
+      box-shadow: var(--shadow);
+      transform: translateY(22px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 1280px) {
+      .layout { grid-template-columns: 220px minmax(0, 1fr); }
+      .console { grid-column: 1 / -1; position: static; }
+      .workflow { grid-template-columns: repeat(4, minmax(120px, 1fr)); }
+    }
+
+    @media (max-width: 860px) {
+      .shell { width: min(100% - 18px, 1560px); padding-top: 12px; }
+      .hero, .bar, .layout { grid-template-columns: 1fr; }
+      .tabs { position: static; display: flex; overflow-x: auto; }
+      .tab-btn { width: auto; min-width: 142px; flex: 0 0 auto; }
+      .fields, .saved-grid, .env-grid, .summary-grid, .route-results, .console-meta { grid-template-columns: 1fr; }
+      .workflow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .endpoint-head { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-main">
+        <p class="eyebrow">IGBC AI Platform Backend</p>
+        <h1>API Testing Dashboard</h1>
+        <p class="subtitle">Complete backend diagnostics, route testing, JWT storage, file uploads, reusable IDs, workflow execution, and syntax-highlighted response inspection without the React frontend.</p>
+      </div>
+      <aside class="side-card">
+        <div class="status-line">
+          <strong>Backend Status</strong>
+          <span class="pill idle" id="backendStatus">Not checked</span>
+        </div>
+        <div class="status-line">
+          <strong>Database Status</strong>
+          <span class="pill idle" id="databaseStatus">Unknown</span>
+        </div>
+        <div class="status-line">
+          <strong>JWT Status</strong>
+          <span class="pill idle" id="jwtStatus">Not set</span>
+        </div>
+        <code class="token-preview" id="tokenPreview">No token stored</code>
+        <input id="manualToken" type="password" autocomplete="off" placeholder="Paste JWT token">
+        <div class="actions">
+          <button class="btn secondary" type="button" id="saveTokenBtn">Save Token</button>
+          <button class="btn secondary" type="button" id="clearTokenBtn">Clear</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="bar">
+      <label for="baseUrl">Base URL</label>
+      <input id="baseUrl" type="url" value="http://localhost:5000/api" spellcheck="false">
+      <button class="btn secondary" type="button" id="resetBaseUrlBtn">Reset</button>
+      <button class="btn" type="button" id="connectivityBtn">API Connectivity Test</button>
+    </section>
+
+    <section class="quick">
+      <div class="quick-head">
+        <h2>Quick Workflow</h2>
+        <div class="actions">
+          <button class="btn" type="button" id="runWorkflowBtn">Run Workflow</button>
+          <button class="btn secondary" type="button" id="clearWorkflowBtn">Reset Progress</button>
+        </div>
+      </div>
+      <div class="workflow" id="workflow"></div>
+    </section>
+
+    <section class="layout">
+      <nav class="tabs" id="tabs" aria-label="API modules"></nav>
+      <section class="content" id="content"></section>
+      <aside class="console" aria-label="Response and error viewer">
+        <div class="console-head">
+          <h2>Response Viewer</h2>
+          <div class="actions">
+            <button class="btn secondary" type="button" id="copyResponseBtn">Copy</button>
+            <button class="btn secondary" type="button" id="clearResponseBtn">Clear</button>
+          </div>
+        </div>
+        <div class="console-meta">
+          <div class="metric"><b>Status</b><span id="responseStatus" class="status-text">Idle</span></div>
+          <div class="metric"><b>Duration</b><span id="responseDuration">-</span></div>
+          <div class="metric"><b>Method</b><span id="responseMethod">-</span></div>
+          <div class="metric"><b>URL</b><span id="responseUrl">-</span></div>
+        </div>
+        <div class="viewer-wrap">
+          <div>
+            <div class="viewer-label"><span>Response Details</span><span id="responseSize">0 B</span></div>
+            <pre class="viewer" id="responseViewer"><span class="empty">Run an API request to view syntax-highlighted JSON.</span></pre>
+          </div>
+          <div>
+            <div class="viewer-label"><span>Error Details</span><span id="errorState">No errors</span></div>
+            <pre class="viewer error small" id="errorViewer"><span class="empty">Network, CORS, auth, 404, and server errors appear here.</span></pre>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const DEFAULT_BASE_URL = "http://localhost:5000/api";
+    const TOKEN_KEY = "igbc_api_jwt";
+    const BASE_URL_KEY = "igbc_api_base_url";
+    const ID_KEYS = {
+      projectId: "igbc_project_id",
+      documentId: "igbc_document_id",
+      assessmentId: "igbc_assessment_id",
+      reportId: "igbc_report_id",
+      certificateId: "igbc_certificate_id",
+      certificateNumber: "igbc_certificate_number"
+    };
+
+    const sample = {
+      register: { name: "IGBC Test Company User", email: "company.tester@igbc.local", password: "Company123!" },
+      login: { email: "admin.tester@igbc.local", password: "Admin123!" },
+      projectCreate: {
+        projectName: "IGBC Integration Test Tower",
+        companyName: "IGBC Demo Developers Pvt Ltd",
+        projectType: "Commercial Office",
+        location: "Bengaluru, Karnataka",
+        description: "Integration test project for validating the complete IGBC certification workflow.",
+        status: "Draft",
+        assessmentStage: "Preliminary"
+      },
+      projectUpdate: { status: "Submitted", assessmentStage: "Final" },
+      assessmentCreate: {
+        projectId: "{{projectId}}",
+        assessorId: "{{assessorId}}",
+        assessmentType: "Preliminary",
+        status: "Pending",
+        score: 72,
+        maxScore: 100,
+        rating: "Silver",
+        creditsEarned: 36,
+        assessorComments: "Initial submission is complete enough for preliminary review.",
+        aiScore: 0,
+        aiRecommendation: ""
+      },
+      assessmentSubmit: {
+        score: 82,
+        maxScore: 100,
+        rating: "Gold",
+        creditsEarned: 41,
+        assessorComments: "Assessment submitted with Gold rating recommendation.",
+        aiScore: 80,
+        aiRecommendation: "Proceed with final certification review."
+      },
+      reportGenerate: { reportType: "Preliminary", assessmentId: "{{assessmentId}}" },
+      certificateGenerate: {}
+    };
+
+    function endpoint(title, method, path, options = {}) {
+      return {
+        id: slug(method + "-" + title),
+        title,
+        method,
+        path,
+        params: options.params || [],
+        fields: options.fields || [],
+        body: options.body,
+        multipart: Boolean(options.multipart),
+        auth: options.auth !== false,
+        root: Boolean(options.root),
+        save: options.save || null,
+        tokenFromResponse: Boolean(options.tokenFromResponse),
+        danger: Boolean(options.danger)
+      };
+    }
+
+    const modules = [
+      {
+        id: "health",
+        label: "Health Check",
+        description: "Debug backend connectivity, database health, environment state, and route availability.",
+        endpoints: [
+          endpoint("Health Check", "GET", "/health", { auth: false, root: true }),
+          endpoint("API Connectivity Test", "GET", "/dashboard/stats"),
+          endpoint("Route Availability Test", "GET", "/__route-test__", { auth: false })
+        ],
+        custom: "health"
+      },
+      {
+        id: "auth",
+        label: "Authentication",
+        description: "Register users, log in, store JWT tokens, and fetch the authenticated profile.",
+        endpoints: [
+          endpoint("Register", "POST", "/auth/register", { body: sample.register, auth: false, tokenFromResponse: true }),
+          endpoint("Login", "POST", "/auth/login", { body: sample.login, auth: false, tokenFromResponse: true }),
+          endpoint("Get Profile", "GET", "/auth/profile")
+        ]
+      },
+      {
+        id: "projects",
+        label: "Projects",
+        description: "Create, read, update, and delete project records.",
+        endpoints: [
+          endpoint("Create Project", "POST", "/projects", { body: sample.projectCreate, save: "project" }),
+          endpoint("Get Projects", "GET", "/projects"),
+          endpoint("Get Project By Id", "GET", "/projects/{projectId}", { params: [{ name: "projectId", label: "Project ID", storage: "projectId" }] }),
+          endpoint("Update Project", "PUT", "/projects/{projectId}", { params: [{ name: "projectId", label: "Project ID", storage: "projectId" }], body: sample.projectUpdate }),
+          endpoint("Delete Project", "DELETE", "/projects/{projectId}", { params: [{ name: "projectId", label: "Project ID", storage: "projectId" }], danger: true })
+        ]
+      },
+      {
+        id: "documents",
+        label: "Documents",
+        description: "Upload project documents, list documents by project, and delete stored documents.",
+        endpoints: [
+          endpoint("Upload Document", "POST", "/documents/upload", {
+            multipart: true,
+            save: "document",
+            fields: [
+              { name: "projectId", label: "Project ID", type: "text", storage: "projectId" },
+              { name: "category", label: "Category", type: "select", options: ["Architectural", "Energy", "Water", "Waste", "IndoorEnvironment", "Materials", "Other"], value: "Energy" },
+              { name: "file", label: "File", type: "file" }
+            ]
+          }),
+          endpoint("Get Documents", "GET", "/documents/project/{projectId}", { params: [{ name: "projectId", label: "Project ID", storage: "projectId" }] }),
+          endpoint("Get Document By Id", "GET", "/documents/{documentId}", { params: [{ name: "documentId", label: "Document ID", storage: "documentId" }] }),
+          endpoint("Delete Document", "DELETE", "/documents/{documentId}", { params: [{ name: "documentId", label: "Document ID", storage: "documentId" }], danger: true })
+        ]
+      },
+      {
+        id: "assessments",
+        label: "Assessments",
+        description: "Create assessments, fetch assessment lists, and submit final assessment results.",
+        endpoints: [
+          endpoint("Create Assessment", "POST", "/assessments", { body: sample.assessmentCreate, save: "assessment" }),
+          endpoint("Get Assessments", "GET", "/assessments"),
+          endpoint("Get Assessment By Id", "GET", "/assessments/{assessmentId}", { params: [{ name: "assessmentId", label: "Assessment ID", storage: "assessmentId" }] }),
+          endpoint("Submit Assessment", "POST", "/assessments/{assessmentId}/submit", { params: [{ name: "assessmentId", label: "Assessment ID", storage: "assessmentId" }], body: sample.assessmentSubmit })
+        ]
+      },
+      {
+        id: "ai",
+        label: "AI Validation",
+        description: "Run document analysis, project scoring, and recommendation generation.",
+        endpoints: [
+          endpoint("Analyze Document", "POST", "/ai/analyze/{documentId}", { params: [{ name: "documentId", label: "Document ID", storage: "documentId" }] }),
+          endpoint("Score Project", "POST", "/ai/score/{projectId}", { params: [{ name: "projectId", label: "Project ID", storage: "projectId" }] }),
+          endpoint("Get Recommendations", "GET", "/ai/recommendations/{projectId}", { params: [{ name: "projectId", label: "Project ID", storage: "projectId" }] })
+        ]
+      },
+      {
+        id: "reports",
+        label: "Reports",
+        description: "Generate project reports and inspect generated reports.",
+        endpoints: [
+          endpoint("Generate Report", "POST", "/reports/generate/{projectId}", { params: [{ name: "projectId", label: "Project ID", storage: "projectId" }], body: sample.reportGenerate, save: "report" }),
+          endpoint("Get Reports", "GET", "/reports/project/{projectId}", { params: [{ name: "projectId", label: "Project ID", storage: "projectId" }] }),
+          endpoint("Get Report By Id", "GET", "/reports/{reportId}", { params: [{ name: "reportId", label: "Report ID", storage: "reportId" }] })
+        ]
+      },
+      {
+        id: "certificates",
+        label: "Certificates",
+        description: "Generate certificates, verify certificate numbers, and fetch certificate details.",
+        endpoints: [
+          endpoint("Generate Certificate", "POST", "/certificates/generate/{projectId}", { params: [{ name: "projectId", label: "Project ID", storage: "projectId" }], body: sample.certificateGenerate, save: "certificate" }),
+          endpoint("Verify Certificate", "GET", "/certificates/verify/{certificateNumber}", { params: [{ name: "certificateNumber", label: "Certificate Number", storage: "certificateNumber" }] }),
+          endpoint("Get Certificate By Id", "GET", "/certificates/{certificateId}", { params: [{ name: "certificateId", label: "Certificate ID", storage: "certificateId" }] })
+        ]
+      },
+      {
+        id: "dashboard",
+        label: "Dashboard",
+        description: "Fetch scoped analytics for the current authenticated user.",
+        endpoints: [endpoint("Get Analytics", "GET", "/dashboard/stats")]
+      }
+    ];
+
+    const workflowSteps = [
+      { id: "register", label: "Register", endpoint: "post-register" },
+      { id: "login", label: "Login", endpoint: "post-login" },
+      { id: "project", label: "Create Project", endpoint: "post-create-project" },
+      { id: "upload", label: "Upload Document", endpoint: "post-upload-document" },
+      { id: "analyze", label: "Analyze Document", endpoint: "post-analyze-document" },
+      { id: "assessment", label: "Create Assessment", endpoint: "post-create-assessment" },
+      { id: "report", label: "Generate Report", endpoint: "post-generate-report" },
+      { id: "certificate", label: "Generate Certificate", endpoint: "post-generate-certificate" }
+    ];
+
+    const routeChecks = [
+      ["GET", "/health", false],
+      ["POST", "/api/auth/register", false],
+      ["POST", "/api/auth/login", false],
+      ["GET", "/api/auth/profile", true],
+      ["GET", "/api/projects", true],
+      ["POST", "/api/projects", true],
+      ["GET", "/api/documents/project/{projectId}", true],
+      ["POST", "/api/documents/upload", true],
+      ["GET", "/api/assessments", true],
+      ["POST", "/api/assessments", true],
+      ["POST", "/api/ai/analyze/{documentId}", true],
+      ["POST", "/api/ai/score/{projectId}", true],
+      ["GET", "/api/reports/project/{projectId}", true],
+      ["POST", "/api/reports/generate/{projectId}", true],
+      ["POST", "/api/certificates/generate/{projectId}", true],
+      ["GET", "/api/dashboard/stats", true]
+    ];
+
+    const state = {
+      activeTab: "health",
+      lastResponseText: "",
+      totals: readJson("igbc_test_totals", { total: 0, success: 0, failed: 0 }),
+      connection: "Not checked",
+      workflow: {}
+    };
+
+    const els = {
+      tabs: document.getElementById("tabs"),
+      content: document.getElementById("content"),
+      workflow: document.getElementById("workflow"),
+      baseUrl: document.getElementById("baseUrl"),
+      backendStatus: document.getElementById("backendStatus"),
+      databaseStatus: document.getElementById("databaseStatus"),
+      jwtStatus: document.getElementById("jwtStatus"),
+      tokenPreview: document.getElementById("tokenPreview"),
+      manualToken: document.getElementById("manualToken"),
+      responseStatus: document.getElementById("responseStatus"),
+      responseDuration: document.getElementById("responseDuration"),
+      responseMethod: document.getElementById("responseMethod"),
+      responseUrl: document.getElementById("responseUrl"),
+      responseViewer: document.getElementById("responseViewer"),
+      errorViewer: document.getElementById("errorViewer"),
+      errorState: document.getElementById("errorState"),
+      responseSize: document.getElementById("responseSize"),
+      toast: document.getElementById("toast")
+    };
+
+    function slug(value) {
+      return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    }
+
+    function html(value) {
+      return String(value == null ? "" : value)
+        .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+    }
+
+    function pretty(value) {
+      return JSON.stringify(value, null, 2);
+    }
+
+    function readJson(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch { return fallback; }
+    }
+
+    function getToken() { return localStorage.getItem(TOKEN_KEY) || ""; }
+    function getId(name) { return localStorage.getItem(ID_KEYS[name]) || ""; }
+
+    function setToken(token) {
+      const clean = String(token || "").trim();
+      clean ? localStorage.setItem(TOKEN_KEY, clean) : localStorage.removeItem(TOKEN_KEY);
+      renderEnvironment();
+    }
+
+    function setId(name, value) {
+      if (!ID_KEYS[name] || !value) return;
+      localStorage.setItem(ID_KEYS[name], String(value));
+      renderContent();
+      renderEnvironment();
+    }
+
+    function getBaseUrl() {
+      return (els.baseUrl.value || DEFAULT_BASE_URL).trim().replace(/\/+$/, "");
+    }
+
+    function getRootUrl() {
+      return getBaseUrl().replace(/\/api$/, "");
+    }
+
+    function getEndpoint(endpointId) {
+      for (const module of modules) {
+        const found = module.endpoints.find((item) => item.id === endpointId);
+        if (found) return found;
+      }
+      return null;
+    }
+
+    function renderAll() {
+      renderTabs();
+      renderWorkflow();
+      renderContent();
+      renderEnvironment();
+    }
+
+    function renderTabs() {
+      els.tabs.innerHTML = modules.map((module) => `
+        <button class="tab-btn ${module.id === state.activeTab ? "active" : ""}" type="button" data-tab="${module.id}">
+          ${html(module.label)} <span>${module.endpoints.length}</span>
+        </button>
+      `).join("");
+    }
+
+    function renderWorkflow() {
+      els.workflow.innerHTML = workflowSteps.map((step, index) => {
+        const status = state.workflow[step.id] || "waiting";
+        return `<div class="workflow-step ${status === "done" ? "ok" : status === "failed" ? "err" : ""}">
+          <b>${index + 1}. ${html(step.label)}</b>
+          <span>${html(status)}</span>
+          <button class="btn secondary" type="button" data-workflow-step="${step.id}">Run</button>
+        </div>`;
+      }).join("");
+    }
+
+    function renderContent() {
+      els.content.innerHTML = modules.map((module) => `
+        <section class="tab-panel ${module.id === state.activeTab ? "active" : ""}">
+          <div class="section-head"><h2>${html(module.label)}</h2></div>
+          <p class="panel-note">${html(module.description)}</p>
+          ${module.custom === "health" ? renderHealthPanel() : ""}
+          <div class="grid">${module.endpoints.filter((item) => item.path !== "/__route-test__").map((item) => renderEndpoint(item)).join("")}</div>
+        </section>
+      `).join("");
+    }
+
+    function renderHealthPanel() {
+      return `
+        <div class="grid" style="margin-bottom: 12px;">
+          <article class="info-card">
+            <div class="info-body">
+              <div class="section-head">
+                <h3>Environment Panel</h3>
+                <button class="btn secondary" type="button" data-refresh-env>Refresh</button>
+              </div>
+              <div class="env-grid">
+                <div class="metric"><b>Current Base URL</b><code>${html(getBaseUrl())}</code></div>
+                <div class="metric"><b>JWT Status</b><span>${getToken() ? "Stored" : "Missing"}</span></div>
+                <div class="metric"><b>Connection Status</b><span>${html(state.connection)}</span></div>
+              </div>
+            </div>
+          </article>
+          <article class="info-card">
+            <div class="info-body">
+              <div class="section-head">
+                <h3>Database Status</h3>
+                <button class="btn" type="button" data-health-check>Run Health Check</button>
+              </div>
+              <div class="saved-grid">
+                <div class="metric"><b>Backend</b><span id="inlineBackend">${html(els.backendStatus.textContent)}</span></div>
+                <div class="metric"><b>Database</b><span id="inlineDatabase">${html(els.databaseStatus.textContent)}</span></div>
+              </div>
+            </div>
+          </article>
+          <article class="info-card">
+            <div class="info-body">
+              <div class="section-head">
+                <h3>Saved IDs</h3>
+                <button class="btn secondary" type="button" data-clear-ids>Clear IDs</button>
+              </div>
+              <div class="saved-grid">
+                ${["projectId", "documentId", "assessmentId", "reportId", "certificateId", "certificateNumber"].map((key) => `
+                  <div class="metric"><b>${html(key)}</b><code>${html(getId(key) || "Not saved")}</code></div>
+                `).join("")}
+              </div>
+            </div>
+          </article>
+          <article class="info-card">
+            <div class="info-body">
+              <div class="section-head">
+                <h3>Testing Summary</h3>
+                <button class="btn secondary" type="button" data-reset-summary>Reset Summary</button>
+              </div>
+              <div class="summary-grid">
+                <div class="metric"><b>Total Requests</b><span>${state.totals.total}</span></div>
+                <div class="metric"><b>Successful Requests</b><span>${state.totals.success}</span></div>
+                <div class="metric"><b>Failed Requests</b><span>${state.totals.failed}</span></div>
+                <div class="metric"><b>Success Rate</b><span>${state.totals.total ? Math.round((state.totals.success / state.totals.total) * 100) : 0}%</span></div>
+              </div>
+            </div>
+          </article>
+          <article class="info-card">
+            <div class="info-body">
+              <div class="section-head">
+                <h3>Route Availability Test</h3>
+                <button class="btn" type="button" data-route-test>Run Route Test</button>
+              </div>
+              <div class="route-results" id="routeResults"><div class="hint">Routes are marked available when the backend responds with anything except 404 or a network failure.</div></div>
+            </div>
+          </article>
+        </div>
+      `;
+    }
+
+    function renderEndpoint(item) {
+      const params = item.params.map((param) => fieldMarkup(item, { ...param, group: "param", type: "text" })).join("");
+      const fields = item.fields.map((field) => fieldMarkup(item, field)).join("");
+      const body = item.body !== undefined ? `
+        <div class="field full">
+          <label for="${item.id}-body">JSON Body <button class="btn secondary" type="button" data-format="${item.id}">Format JSON</button></label>
+          <textarea id="${item.id}-body" data-body="${item.id}" spellcheck="false">${html(pretty(resolveTemplate(item.body)))}</textarea>
+        </div>` : "";
+
+      return `<article class="endpoint">
+        <div class="endpoint-head">
+          <div>
+            <h3>${html(item.title)}</h3>
+            <div class="route"><span class="method ${item.method.toLowerCase()}">${item.method}</span><span>${html(item.path)}</span></div>
+          </div>
+          <div class="hint">${item.auth ? "Authorization attached when JWT exists" : "No JWT required"}</div>
+        </div>
+        <div class="endpoint-body">
+          <div class="fields">${params}${fields}${body}</div>
+          <div class="actions">
+            <button class="btn ${item.danger ? "danger" : ""}" type="button" data-run="${item.id}">Execute API</button>
+            <button class="btn secondary" type="button" data-copy-url="${item.id}">Copy URL</button>
+          </div>
+        </div>
+      </article>`;
+    }
+
+    function fieldMarkup(item, field) {
+      const group = field.group || "field";
+      const id = `${item.id}-${group}-${field.name}`;
+      const stored = field.storage ? getId(field.storage) : "";
+      const value = stored || field.value || "";
+      const attrs = `id="${id}" data-field="${item.id}:${group}:${field.name}" data-storage="${html(field.storage || "")}"`;
+      let control = "";
+
+      if (field.type === "select") {
+        control = `<select ${attrs}>${field.options.map((option) => `<option value="${html(option)}" ${option === value ? "selected" : ""}>${html(option)}</option>`).join("")}</select>`;
+      } else if (field.type === "file") {
+        control = `<input ${attrs} type="file">`;
+      } else {
+        control = `<input ${attrs} type="text" value="${html(value)}" placeholder="${html(field.label || field.name)}" spellcheck="false">`;
+      }
+
+      return `<div class="field ${field.full ? "full" : ""}"><label for="${id}">${html(field.label || field.name)}</label>${control}</div>`;
+    }
+
+    function resolveTemplate(value) {
+      if (Array.isArray(value)) return value.map(resolveTemplate);
+      if (value && typeof value === "object") {
+        return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, resolveTemplate(val)]));
+      }
+      if (typeof value === "string") {
+        return value.replaceAll("{{projectId}}", getId("projectId") || "{{projectId}}")
+          .replaceAll("{{documentId}}", getId("documentId") || "{{documentId}}")
+          .replaceAll("{{assessmentId}}", getId("assessmentId") || "{{assessmentId}}")
+          .replaceAll("{{reportId}}", getId("reportId") || "{{reportId}}")
+          .replaceAll("{{certificateId}}", getId("certificateId") || "{{certificateId}}");
+      }
+      return value;
+    }
+
+    function buildUrl(item) {
+      if (item.root) return `${getRootUrl()}${item.path}`;
+      let path = item.path;
+      for (const param of item.params) {
+        const value = getFieldValue(item.id, "param", param.name) || (param.storage ? getId(param.storage) : "");
+        path = path.replace(`{${param.name}}`, encodeURIComponent(value));
+      }
+      return `${getBaseUrl()}${path}`;
+    }
+
+    function getFieldValue(endpointId, group, name) {
+      const input = document.querySelector(`[data-field="${endpointId}:${group}:${name}"]`);
+      return input ? input.value.trim() : "";
+    }
+
+    async function runEndpoint(endpointId, button, options = {}) {
+      const item = getEndpoint(endpointId);
+      if (!item) return null;
+
+      const startedAt = performance.now();
+      const url = buildUrl(item);
+      const request = { method: item.method, headers: {} };
+      if (item.auth && getToken()) request.headers.Authorization = `Bearer ${getToken()}`;
+
+      try {
+        validateParams(item);
+        if (item.multipart) {
+          request.body = buildFormData(item);
+        } else if (item.body !== undefined) {
+          request.headers["Content-Type"] = "application/json";
+          request.body = JSON.stringify(parseBody(item));
+        }
+
+        setLoading(button, true);
+        setPending(item, url);
+        const response = await fetch(url, request);
+        const duration = Math.round(performance.now() - startedAt);
+        const body = await readResponse(response);
+        const result = {
+          request: { method: item.method, url, authAttached: Boolean(request.headers.Authorization), contentType: request.headers["Content-Type"] || "multipart/form-data or none" },
+          response: { ok: response.ok, status: response.status, statusText: response.statusText, headers: Object.fromEntries(response.headers.entries()), body }
+        };
+
+        recordResult(response.ok);
+        renderResponse(item, url, duration, result);
+        handleResponseSideEffects(item, body);
+        if (!options.silent) renderContent();
+        return { ok: response.ok, status: response.status, body };
+      } catch (error) {
+        const duration = Math.round(performance.now() - startedAt);
+        recordResult(false);
+        renderError(item, url, duration, error);
+        return { ok: false, error };
+      } finally {
+        setLoading(button, false);
+      }
+    }
+
+    function validateParams(item) {
+      for (const param of item.params) {
+        const value = getFieldValue(item.id, "param", param.name) || (param.storage ? getId(param.storage) : "");
+        if (!value) throw new Error(`${param.label || param.name} is required. Save or enter this ID first.`);
+      }
+    }
+
+    function parseBody(item) {
+      const textarea = document.querySelector(`[data-body="${item.id}"]`);
+      if (!textarea || !textarea.value.trim()) return {};
+      try {
+        const parsed = JSON.parse(textarea.value);
+        const resolved = resolveTemplate(parsed);
+        textarea.value = pretty(resolved);
+        return resolved;
+      } catch (error) {
+        throw new Error(`Invalid JSON body: ${error.message}`);
+      }
+    }
+
+    function buildFormData(item) {
+      const formData = new FormData();
+      for (const field of item.fields) {
+        const input = document.querySelector(`[data-field="${item.id}:field:${field.name}"]`);
+        if (!input) continue;
+        if (field.type === "file") {
+          if (!input.files || !input.files[0]) throw new Error(`${field.label || field.name} is required.`);
+          formData.append(field.name, input.files[0]);
+        } else {
+          const value = input.value.trim() || (field.storage ? getId(field.storage) : "");
+          if (!value) throw new Error(`${field.label || field.name} is required.`);
+          formData.append(field.name, value);
+        }
+      }
+      return formData;
+    }
+
+    async function readResponse(response) {
+      const type = response.headers.get("content-type") || "";
+      if (type.includes("application/json")) return response.json();
+      const text = await response.text();
+      try { return JSON.parse(text); } catch { return text; }
+    }
+
+    function handleResponseSideEffects(item, body) {
+      const token = body && body.data && body.data.token;
+      if (item.tokenFromResponse && token) setToken(token);
+
+      const data = body && body.data ? body.data : {};
+      if (data.project && data.project._id) setId("projectId", data.project._id);
+      if (data.document && data.document._id) setId("documentId", data.document._id);
+      if (data.assessment && data.assessment._id) setId("assessmentId", data.assessment._id);
+      if (data.report && data.report._id) setId("reportId", data.report._id);
+      if (data.certificate && data.certificate._id) setId("certificateId", data.certificate._id);
+      if (data.certificate && data.certificate.certificateNumber) setId("certificateNumber", data.certificate.certificateNumber);
+
+      if (body && body.data && body.data.database) {
+        updateBackendStatus(true, body.data.database.status);
+      }
+    }
+
+    function recordResult(ok) {
+      state.totals.total += 1;
+      ok ? state.totals.success += 1 : state.totals.failed += 1;
+      localStorage.setItem("igbc_test_totals", pretty(state.totals));
+    }
+
+    function setPending(item, url) {
+      els.responseStatus.textContent = "Pending";
+      els.responseStatus.className = "status-text warn";
+      els.responseDuration.textContent = "-";
+      els.responseMethod.textContent = item.method;
+      els.responseUrl.textContent = url;
+      els.responseViewer.innerHTML = '<span class="empty">Loading...</span>';
+      els.errorViewer.innerHTML = '<span class="empty">No errors.</span>';
+      els.errorState.textContent = "No errors";
+      els.responseSize.textContent = "0 B";
+    }
+
+    function renderResponse(item, url, duration, result) {
+      const text = pretty(result);
+      state.lastResponseText = text;
+      els.responseStatus.textContent = `${result.response.status} ${result.response.statusText}`;
+      els.responseStatus.className = `status-text ${result.response.ok ? "ok" : classifyStatus(result.response.status).className}`;
+      els.responseDuration.textContent = `${duration} ms`;
+      els.responseMethod.textContent = item.method;
+      els.responseUrl.textContent = url;
+      els.responseViewer.innerHTML = highlightJson(result);
+      els.responseSize.textContent = formatBytes(new Blob([text]).size);
+
+      if (result.response.ok) {
+        els.errorViewer.innerHTML = '<span class="empty">No errors.</span>';
+        els.errorState.textContent = "No errors";
+      } else {
+        const classified = classifyStatus(result.response.status);
+        els.errorState.textContent = classified.label;
+        els.errorViewer.innerHTML = highlightJson({ errorType: classified.label, hint: classified.hint, details: result.response.body });
+      }
+    }
+
+    function renderError(item, url, duration, error) {
+      const payload = classifyNetworkError(error);
+      state.lastResponseText = "";
+      els.responseStatus.textContent = "Failed";
+      els.responseStatus.className = "status-text err";
+      els.responseDuration.textContent = `${duration} ms`;
+      els.responseMethod.textContent = item.method;
+      els.responseUrl.textContent = url;
+      els.responseViewer.innerHTML = '<span class="empty">No JSON response was received.</span>';
+      els.errorState.textContent = payload.errorType;
+      els.errorViewer.innerHTML = highlightJson(payload);
+      els.responseSize.textContent = "0 B";
+      state.connection = payload.errorType;
+      updateBackendStatus(false);
+    }
+
+    function classifyStatus(status) {
+      const map = {
+        401: ["401 Unauthorized", "JWT is missing, expired, malformed, or belongs to the wrong user."],
+        403: ["403 Forbidden", "The route exists, but the current user role cannot perform this action."],
+        404: ["404 Not Found", "Check the URL, path parameters, or whether the backend route exists."],
+        500: ["500 Server Error", "The backend threw an unhandled error. Check the server logs and database state."]
+      };
+      const found = map[status] || [`HTTP ${status}`, "The request reached the backend but returned a non-success status."];
+      return { label: found[0], hint: found[1], className: status >= 500 || status === 404 ? "err" : "warn" };
+    }
+
+    function classifyNetworkError(error) {
+      const isFetchFailure = error.name === "TypeError" && /fetch|network|failed/i.test(error.message);
+      return {
+        errorType: isFetchFailure ? "Network or CORS Error" : "Client Error",
+        message: error.message,
+        hint: isFetchFailure
+          ? "Confirm the backend is running, CORS allows this origin, and the Base URL is correct."
+          : "Fix the request form values or JSON body and try again.",
+        stack: error.stack || null
+      };
+    }
+
+    function highlightJson(value) {
+      const json = html(typeof value === "string" ? value : pretty(value));
+      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+        let cls = "json-number";
+        if (/^"/.test(match)) cls = /:$/.test(match) ? "json-key" : "json-string";
+        else if (/true|false/.test(match)) cls = "json-boolean";
+        else if (/null/.test(match)) cls = "json-null";
+        return `<span class="${cls}">${match}</span>`;
+      });
+    }
+
+    function updateBackendStatus(ok, dbStatus) {
+      state.connection = ok ? "Connected" : "Disconnected";
+      els.backendStatus.textContent = ok ? "Online" : "Offline";
+      els.backendStatus.className = `pill ${ok ? "ok" : "err"}`;
+      if (dbStatus) {
+        els.databaseStatus.textContent = dbStatus;
+        els.databaseStatus.className = `pill ${dbStatus === "connected" ? "ok" : "warn"}`;
+      }
+      renderEnvironment();
+    }
+
+    async function runHealthCheck() {
+      const health = endpoint("Health Check", "GET", "/health", { auth: false, root: true });
+      const startedAt = performance.now();
+      const url = buildUrl(health);
+      try {
+        setPending(health, url);
+        const response = await fetch(url);
+        const body = await readResponse(response);
+        recordResult(response.ok);
+        renderResponse(health, url, Math.round(performance.now() - startedAt), {
+          request: { method: "GET", url, authAttached: false },
+          response: { ok: response.ok, status: response.status, statusText: response.statusText, headers: Object.fromEntries(response.headers.entries()), body }
+        });
+        updateBackendStatus(response.ok, body && body.data && body.data.database && body.data.database.status);
+      } catch (error) {
+        recordResult(false);
+        renderError(health, url, Math.round(performance.now() - startedAt), error);
+      }
+    }
+
+    async function runRouteAvailabilityTest() {
+      const results = [];
+      for (const [method, rawPath, needsAuth] of routeChecks) {
+        const path = rawPath
+          .replace("{projectId}", getId("projectId") || "000000000000000000000000")
+          .replace("{documentId}", getId("documentId") || "000000000000000000000000");
+        const url = path.startsWith("/api") ? `${getRootUrl()}${path}` : `${getRootUrl()}${path}`;
+        const headers = {};
+        if (needsAuth && getToken()) headers.Authorization = `Bearer ${getToken()}`;
+        try {
+          const response = await fetch(url, { method, headers });
+          const available = response.status !== 404;
+          results.push({ method, path, status: response.status, available });
+        } catch (error) {
+          results.push({ method, path, status: "network", available: false, error: error.message });
+        }
+      }
+
+      const el = document.getElementById("routeResults");
+      if (el) {
+        el.innerHTML = results.map((item) => `
+          <div class="metric">
+            <b>${html(item.method)} ${html(item.path)}</b>
+            <span class="status-text ${item.available ? "ok" : "err"}">${item.available ? "Available" : "Unavailable"} (${html(item.status)})</span>
+          </div>
+        `).join("");
+      }
+      renderResponse(endpoint("Route Availability Test", "GET", "/__route-test__", { auth: false }), `${getRootUrl()}/route-availability`, 0, {
+        request: { method: "MIXED", url: "Route availability test", authAttached: Boolean(getToken()) },
+        response: { ok: results.every((item) => item.available), status: 200, statusText: "Route Test Complete", headers: {}, body: results }
+      });
+    }
+
+    async function runWorkflowStep(stepId) {
+      const step = workflowSteps.find((item) => item.id === stepId);
+      if (!step) return false;
+      state.workflow[step.id] = "running";
+      renderWorkflow();
+      const result = await runEndpoint(step.endpoint, null, { silent: true });
+      state.workflow[step.id] = result && result.ok ? "done" : "failed";
+      renderAll();
+      return Boolean(result && result.ok);
+    }
+
+    async function runWorkflow() {
+      for (const step of workflowSteps) {
+        const ok = await runWorkflowStep(step.id);
+        if (!ok) {
+          toast(`Workflow stopped at ${step.label}.`);
+          return;
+        }
+      }
+      toast("Workflow complete.");
+    }
+
+    function setLoading(button, loading) {
+      if (!button) return;
+      button.disabled = loading;
+      button.textContent = loading ? "Executing..." : "Execute API";
+    }
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+    }
+
+    async function copyText(text, message) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+      toast(message);
+    }
+
+    function toast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("show");
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => els.toast.classList.remove("show"), 2400);
+    }
+
+    function renderEnvironment() {
+      const token = getToken();
+      els.jwtStatus.textContent = token ? "Stored" : "Not set";
+      els.jwtStatus.className = `pill ${token ? "ok" : "idle"}`;
+      els.tokenPreview.textContent = token ? `${token.slice(0, 26)}...${token.slice(-14)}` : "No token stored";
+      els.manualToken.value = "";
+    }
+
+    function clearConsole() {
+      state.lastResponseText = "";
+      els.responseStatus.textContent = "Idle";
+      els.responseStatus.className = "status-text";
+      els.responseDuration.textContent = "-";
+      els.responseMethod.textContent = "-";
+      els.responseUrl.textContent = "-";
+      els.responseViewer.innerHTML = '<span class="empty">Run an API request to view syntax-highlighted JSON.</span>';
+      els.errorViewer.innerHTML = '<span class="empty">Network, CORS, auth, 404, and server errors appear here.</span>';
+      els.errorState.textContent = "No errors";
+      els.responseSize.textContent = "0 B";
+    }
+
+    function bindEvents() {
+      els.tabs.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-tab]");
+        if (!button) return;
+        state.activeTab = button.dataset.tab;
+        renderTabs();
+        renderContent();
+      });
+
+      els.content.addEventListener("click", async (event) => {
+        const run = event.target.closest("[data-run]");
+        const format = event.target.closest("[data-format]");
+        const copy = event.target.closest("[data-copy-url]");
+        if (run) await runEndpoint(run.dataset.run, run);
+        if (format) {
+          try {
+            const item = getEndpoint(format.dataset.format);
+            parseBody(item);
+            toast("JSON formatted.");
+          } catch (error) {
+            toast(error.message);
+          }
+        }
+        if (copy) {
+          const item = getEndpoint(copy.dataset.copyUrl);
+          if (item) copyText(buildUrl(item), "Request URL copied.");
+        }
+        if (event.target.closest("[data-health-check]")) await runHealthCheck();
+        if (event.target.closest("[data-route-test]")) await runRouteAvailabilityTest();
+        if (event.target.closest("[data-refresh-env]")) renderAll();
+        if (event.target.closest("[data-clear-ids]")) {
+          Object.values(ID_KEYS).forEach((key) => localStorage.removeItem(key));
+          renderAll();
+          toast("Saved IDs cleared.");
+        }
+        if (event.target.closest("[data-reset-summary]")) {
+          state.totals = { total: 0, success: 0, failed: 0 };
+          localStorage.setItem("igbc_test_totals", pretty(state.totals));
+          renderAll();
+        }
+      });
+
+      els.workflow.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-workflow-step]");
+        if (button) await runWorkflowStep(button.dataset.workflowStep);
+      });
+
+      document.getElementById("runWorkflowBtn").addEventListener("click", runWorkflow);
+      document.getElementById("clearWorkflowBtn").addEventListener("click", () => {
+        state.workflow = {};
+        renderWorkflow();
+      });
+      document.getElementById("connectivityBtn").addEventListener("click", runHealthCheck);
+      document.getElementById("resetBaseUrlBtn").addEventListener("click", () => {
+        els.baseUrl.value = DEFAULT_BASE_URL;
+        localStorage.setItem(BASE_URL_KEY, DEFAULT_BASE_URL);
+        renderAll();
+      });
+      els.baseUrl.addEventListener("change", () => {
+        localStorage.setItem(BASE_URL_KEY, getBaseUrl());
+        renderAll();
+      });
+      document.getElementById("saveTokenBtn").addEventListener("click", () => {
+        setToken(els.manualToken.value);
+        toast("JWT token saved.");
+      });
+      document.getElementById("clearTokenBtn").addEventListener("click", () => {
+        setToken("");
+        toast("JWT token cleared.");
+      });
+      document.getElementById("copyResponseBtn").addEventListener("click", () => {
+        state.lastResponseText ? copyText(state.lastResponseText, "Response copied.") : toast("No response to copy.");
+      });
+      document.getElementById("clearResponseBtn").addEventListener("click", clearConsole);
+    }
+
+    function init() {
+      els.baseUrl.value = localStorage.getItem(BASE_URL_KEY) || DEFAULT_BASE_URL;
+      renderAll();
+      bindEvents();
+      runHealthCheck();
+    }
+
+    init();
+  </script>
+</body>
+</html>
